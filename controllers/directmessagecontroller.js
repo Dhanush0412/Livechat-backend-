@@ -22,7 +22,7 @@ let senddirectmessage = async(req,res)=>{
     populatedmessage
 );
 
-    return res.json(message)
+    return res.json(populatedmessage)
    } catch (error) {
       console.log(error)
       return res.send("internal error")

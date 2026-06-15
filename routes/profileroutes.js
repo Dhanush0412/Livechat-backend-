@@ -6,5 +6,5 @@ let {createprofile,getdashboard, connectionprofile,updatedprofilepic} = require(
 router.post("/create",createprofile);
 router.get("/dashboard/:profileid",getdashboard);
 router.post("/:profileid/:friendid",connectionprofile)
-router.put("/profilepis/:profileid",upload.single("profilepic"),updatedprofilepic)
+router.put("/profilepic/:profileid",upload.single("profilepic"),updatedprofilepic)
 module.exports= router;

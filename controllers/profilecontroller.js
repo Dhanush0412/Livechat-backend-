@@ -15,10 +15,18 @@ let createprofile = async(req,res)=>{
     if(profileexist){
         return res.status(401).send("profile already existing")
     }
-    let profile = new Profile({
-        bio:bio,
-        user:userid
-    })
+   let profile = new Profile({
+
+    bio:bio,
+
+    user:userid,
+
+    profilepic:
+    req.file
+    ?
+    req.file.filename:"default-profile.jpg"
+
+})
     await profile.save()
     return res.send("profile created")
    }
@@ -39,8 +47,7 @@ let getdashboard = async(req,res)=>{
     if(!profile){
         return res.status(401).send("profile not exist")
     }
-     console.log(profileid)
-    console.log(profile)
+    
     return res.json({
         profileid : profile._id,
         username : profile.user.username,
@@ -56,27 +63,7 @@ let getdashboard = async(req,res)=>{
    }
 }
 
-// connections //
-let connectionprofile = async(req,res)=>{
-    try {
-        let {profileid,friendid} = req.params;
-        let profile = await Profile.findById(profileid);
-        let friend = await Profile.findById(friendid);
-      
-        if(!profile || !friend){
-            return res.send("friend profile not found")
-        }
-         profile.connections.push(friendid)
-         friend.connections.push(profileid)
-        await profile.save();
-        await friend.save();
-        return res.send("connected successfully");
 
-    } catch (error) {
-        console.log(error)
-        return res.send("internal error")
-    }
-}
 
 // profile pic updation //
 
@@ -87,7 +74,12 @@ let updatedprofilepic = async(req,res)=>{
         if(!profile){
             return res.send("profile not exist")
         }
-        profile.profilepic=req.file.filename;
+        if(!req.file){
+
+    return res.send(
+        "please upload image"
+    );}
+profile.profilepic =req.file.filename;
         await profile.save();
         return res.json({
             message:"profile pic updated successfully",
@@ -99,4 +91,4 @@ let updatedprofilepic = async(req,res)=>{
     }
 }
 
-module.exports={createprofile,getdashboard,connectionprofile,updatedprofilepic};
+module.exports={createprofile,getdashboard,updatedprofilepic};

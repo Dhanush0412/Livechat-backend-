@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose")
 let Directmessage=require("../models/directmessage")
 let socket = require("../socket/socket")
 let senddirectmessage = async(req,res)=>{
@@ -104,5 +105,154 @@ async(req,res)=>{
     }
 
 }
+let unreadcount =async(req,res)=>{
 
-module.exports={senddirectmessage,getdirectmessage,markmessagesread}
+    try{
+
+        let { profileid } =
+        req.params;
+
+        let result =
+        await Directmessage.aggregate([
+
+        {
+
+            $match:{
+
+                receiver:
+                new mongoose.Types.ObjectId(
+                    profileid
+                ),
+
+                isRead:false
+
+            }
+
+        },
+
+        {
+
+            $group:{
+
+                _id:"$sender",
+
+                unreadCount:{
+                    $sum:1
+                }
+
+            }
+
+        }
+
+        ]);
+
+        return res.json(
+            result
+        );
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        return res.send( "internal error");
+
+    }
+
+}
+
+let getchatlist =async(req,res)=>{
+
+try{
+
+let { profileid } =req.params;
+
+let chats =await Directmessage.aggregate([
+
+{
+    $match:{
+
+        $or:[
+
+        {
+            sender:
+            new mongoose.Types.ObjectId(profileid)
+        },
+
+        {
+            receiver:
+            new mongoose.Types.ObjectId(profileid)
+        }
+
+        ]
+
+    }
+},
+
+{
+    $sort:{
+        createdAt:-1
+    }
+},
+
+{
+    $group:{
+
+        _id:{
+
+            $cond:[
+
+                {
+                    $eq:[
+                        "$sender",
+                        new mongoose.Types.ObjectId(
+                            profileid
+                        )
+                    ]
+                },
+
+                "$receiver",
+
+                "$sender"
+
+            ]
+
+        },
+
+        latestMessage:{
+            $first:"$text"
+        },
+
+        latestTime:{
+            $first:"$createdAt"
+        }
+
+    }
+},
+
+{
+    $sort:{
+        latestTime:-1
+    }
+}
+
+]);
+
+return res.json(chats);
+
+}
+catch(error){
+
+console.log(error);
+
+return res.send(
+    "internal error"
+);
+
+}
+
+}
+
+
+module.exports={senddirectmessage,getdirectmessage,markmessagesread,unreadcount,getchatlist}

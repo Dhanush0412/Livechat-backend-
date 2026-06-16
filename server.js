@@ -12,11 +12,9 @@ let io = new Server(server,{
     }
 })
 let socket = require("./socket/socket");
-const { profile } = require("console");
 socket.init(io)
 
 app.use(express.json())
-app.use("/",express.static("uploads"))
 app.use("/user",require("./routes/userroutes"))
 app.use("/profile",require("./routes/profileroutes"))
 app.use("/uploads",express.static("uploads"))
@@ -26,8 +24,7 @@ app.use("/getting",require("./routes/chatroutes"))
 app.use("/post",require("./routes/postroutes"))
 app.use("/group",require("./routes/grouproutes"))
 app.use("/message",require("./routes/messageroutes"))
-app.use("/",require("./routes/messageroutes"))
-app.use("/",require("./routes/directmessageroutes"))
+app.use("/directmessage",require("./routes/directmessageroutes"))
 
 io.on("connection",(socket)=>{
     console.log("user connected")

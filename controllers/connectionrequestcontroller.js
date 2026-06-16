@@ -1,4 +1,4 @@
-const { populate } = require("dotenv");
+
 let Connectionrequest = require("../models/connectionrequest")
 let Profile = require("../models/profile")
 
@@ -92,7 +92,7 @@ let acceptrequest = async(req,res)=>{
         if(!request){
             return res.send("request not found")
         }
-        request.status="reject"
+        request.status="rejected"
         await request.save();
         return res.send("request rejected")
     } catch (error) {

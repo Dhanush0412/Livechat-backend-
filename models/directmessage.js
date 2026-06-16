@@ -11,6 +11,10 @@ let directmessageschema = mongoose.Schema({
     receiver:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"Profile"
+    },
+    isRead:{
+        type:Boolean,
+        default:false
     }
 },{
     timestamps:true

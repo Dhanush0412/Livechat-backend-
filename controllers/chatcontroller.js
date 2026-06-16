@@ -10,7 +10,24 @@ let getchatlist = async(req,res)=>{
                 path:"user"
             }
         })
-        return res.json(profile.connections)
+        if(!profile){
+            return res.send("profile not found")
+        }
+        return res.json(profile.connections.map(
+
+    (connection)=>({
+
+    profileid:connection._id,
+
+    username:connection.user.username,
+
+    profilepic:connection.profilepic
+
+ })
+
+ )
+
+ )
         
     } catch (error) {
         console.log(error)

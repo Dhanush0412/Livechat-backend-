@@ -254,5 +254,135 @@ return res.send(
 
 }
 
+let chatpreview = async(req,res)=>{
 
-module.exports={senddirectmessage,getdirectmessage,markmessagesread,unreadcount,getchatlist}
+try{
+
+let { profileid } = req.params;
+
+let result =
+await Directmessage.aggregate([
+
+{
+    $match:{
+
+        $or:[
+
+            {
+                sender:
+                new mongoose.Types.ObjectId(
+                    profileid
+                )
+            },
+
+            {
+                receiver:
+                new mongoose.Types.ObjectId(
+                    profileid
+                )
+            }
+
+        ]
+
+    }
+},
+
+{
+    $sort:{
+        createdAt:-1
+    }
+},
+
+{
+    $group:{
+
+        _id:{
+
+            $cond:[
+
+                {
+                    $eq:[
+                        "$sender",
+                        new mongoose.Types.ObjectId(
+                            profileid
+                        )
+                    ]
+                },
+
+                "$receiver",
+
+                "$sender"
+
+            ]
+
+        },
+
+        latestMessage:{
+            $first:"$text"
+        },
+
+        latestTime:{
+            $first:"$createdAt"
+        }
+
+    }
+
+},
+
+{
+    $lookup:{
+
+        from:"profiles",
+
+        localField:"_id",
+
+        foreignField:"_id",
+
+        as:"friend"
+
+    }
+
+},
+
+{
+    $unwind:"$friend"
+},
+
+{
+    $project:{
+
+        friendid:"$friend._id",
+
+        profilepic:"$friend.profilepic",
+
+        latestMessage:1,
+
+        latestTime:1
+
+    }
+
+},
+
+{
+    $sort:{
+        latestTime:-1
+    }
+}
+
+]);
+
+return res.json(result);
+
+}
+catch(error){
+
+console.log(error);
+
+return res.send("internal error");
+
+}
+
+}
+
+
+module.exports={senddirectmessage,getdirectmessage,markmessagesread,unreadcount,getchatlist,chatpreview}

@@ -8,4 +8,4 @@ router.get(
     getchatlist
 )
 
-module.exports=getchatlist;
+module.exports=router;

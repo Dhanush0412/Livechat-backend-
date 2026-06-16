@@ -57,5 +57,52 @@ let getdirectmessage = async(req,res)=>{
     return res.send("internal error")
    }
 }
+let markmessagesread =
+async(req,res)=>{
 
-module.exports={senddirectmessage,getdirectmessage}
+    try{
+
+        let {
+            senderid,
+            receiverid
+        } = req.params;
+
+        await Directmessage.updateMany(
+
+        {
+
+            sender:senderid,
+
+            receiver:receiverid,
+
+            isRead:false
+
+        },
+
+        {
+
+            isRead:true
+
+        }
+
+        );
+
+        return res.send(
+            "messages marked as read"
+        );
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        return res.send(
+            "internal error"
+        );
+
+    }
+
+}
+
+module.exports={senddirectmessage,getdirectmessage,markmessagesread}

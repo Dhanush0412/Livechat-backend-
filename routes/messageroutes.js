@@ -1,9 +1,9 @@
 let express = require("express")
 let router = express.Router()
 
-let {sendmessage,getmessage} = require("../controllers/messagecontroller")
+let {sendmessage,getgroupmessage} = require("../controllers/messagecontroller")
 
 router.post("/",sendmessage)
-router.get("/:groupid",getmessage)
+router.get("/:groupid",getgroupmessage)
 
 module.exports=router

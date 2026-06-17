@@ -25,23 +25,32 @@ let sendmessage = async (req,res)=>{
     }
 }
 
-let getmessage = async(req,res)=>{
+
+let getgroupmessage = async(req,res)=>{
+
     try {
-        let {groupid} = req.params
-        let message = await Message.find({
-            group:groupid
-        })
+
+        let { groupid } = req.params;
+
+        let messages =await Message.find({group:groupid})
+
         .populate("sender")
+
         .populate("group")
-        .sort({
-            createdAt:1
-        })
-        return res.send(message)
-        
-    } catch (error) {
-       console.log(error)
-       return res.send("internal error")
+
+        .sort({createdAt:1});
+
+        return res.json(messages);
+
     }
+    catch(error){
+
+        console.log(error);
+
+        return res.send("internal error");
+
+    }
+
 }
 
-module.exports={sendmessage,getmessage}
+module.exports={sendmessage,getgroupmessage}

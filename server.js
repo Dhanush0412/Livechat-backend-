@@ -50,61 +50,23 @@ app.use(
 );
  
  
-app.use(
-    express.json()
-);
+app.use(express.json());
  
  
 // Static Files
  
-app.use(
-    "/uploads",
-    express.static("uploads")
-);
+app.use("/uploads",express.static("uploads"));
  
  
 // Routes
  
-app.use(
-    "/user",
-    require("./routes/userroutes")
-);
- 
- 
-app.use(
-    "/profile",
-    require("./routes/profileroutes")
-);
- 
- 
-app.use(
-    "/friend",
-    require("./routes/profileroutes")
-);
- 
- 
-app.use(
-    "/post",
-    require("./routes/postroutes")
-);
- 
- 
-app.use(
-    "/group",
-    require("./routes/grouproutes")
-);
- 
- 
-app.use(
-    "/message",
-    require("./routes/messageroutes")
-);
- 
- 
-app.use(
-    "/",
-    require("./routes/directmessageroutes")
-);
+app.use("/user",require("./routes/userroutes"));
+app.use("/profile",require("./routes/profileroutes"));
+app.use("/friend",require("./routes/profileroutes"));
+app.use("/post",require("./routes/postroutes"));
+app.use("/group",require("./routes/grouproutes"));
+app.use("/message",require("./routes/messageroutes"));
+app.use("/dmessage",require("./routes/directmessageroutes"));
  
  
 // Socket Connection
@@ -172,7 +134,7 @@ io.on(
 // Start Server
  
 const PORT =
-    process.env.PORT || 5001;
+    process.env.PORT;
  
  
 server.listen(

@@ -6,6 +6,16 @@ let socket = require("../socket/socket")
 let sendmessage = async (req,res)=>{
     try {
         let{text,senderid,groupid}= req.body
+        let group = await Group.findById(groupid)
+        if(!group){
+            return res.send("group not found")
+        }
+        if(!group.members.includes(senderid)){
+           return res.send("you are not a member of this group");
+          }
+         if(!text || text.trim()===""){
+           return res.send("message required");
+          }
          let message = new Message({
             text:text,
             sender:senderid,
@@ -18,7 +28,7 @@ let sendmessage = async (req,res)=>{
          socket.getIO()
          .to(groupid)
          .emit("receivemessage",populatemessage)
-         return res.json(message)
+         return res.json(populatemessage)
     } catch (error) {
         console.log(error)
         return res.send("internal error")
@@ -30,7 +40,14 @@ let getgroupmessage = async(req,res)=>{
 
     try {
 
-        let { groupid } = req.params;
+        let {groupid,profileid} = req.params;
+        let group = await Group.findById(groupid)
+        if(!group){
+            return res.send("group not exist")
+        }
+        if(!group.members.includes(profileid)){
+      return res.send("access denied");
+        }
 
         let messages =await Message.find({group:groupid})
 

@@ -118,6 +118,8 @@ let unlike = async(req,res)=>{
     }
 }
 
+// getting particular profile post //
+
 let getpost = async(req,res)=>{
     try {
         let {username} = req.query;

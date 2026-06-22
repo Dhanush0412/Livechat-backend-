@@ -1,18 +1,11 @@
 require("dotenv").config();
- 
 require("./config/db");
- 
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
- 
 const app = express();
- 
 const server = http.createServer(app);
- 
 const { Server } = require("socket.io");
- 
- 
 // Socket Configuration
  
 const io = new Server(server, {
@@ -70,18 +63,15 @@ app.use("/dmessage",require("./routes/directmessageroutes"));
 app.use("/connection",require("./routes/connectionrequestroutes"))
 app.use("/mainlist",require("./routes/chatroutes"))
 app.use("/notification",require("./routes/notificationroutes"))
+
 // Socket Connection
  
 io.on(
     "connection",
     (socket)=>{
- 
         console.log("User connected:",socket.id);
-      
-       
         socket.on("joingroup",
             (groupid)=>{
- 
                try {
                  socket.join(groupid);
                 console.log("Joined group:",groupid);
@@ -117,10 +107,7 @@ io.on(
  
 // Start Server
  
-const PORT =
-    process.env.PORT;
- 
- 
+const PORT =process.env.PORT;
 server.listen(
     PORT,
     ()=>{

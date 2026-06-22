@@ -172,5 +172,36 @@ let getpost = async(req,res)=>{
     }
 }
 
+   let getmyposts = async(req,res)=>{
 
-module.exports= {createpost,getfeed,likes,unlike,getpost}
+    try{
+        let { profileid } = req.params;
+        let profile = await Profile.findById(profileid);
+        if(!profile){
+            return res.send("profile not found");
+        }
+        let posts = await Post.find({profile:profileid})
+        .populate({
+            path:"profile",
+            populate:{
+                path:"user"
+            }
+        })
+
+        .sort({
+            createdAt:-1
+        });
+        return res.json(posts);
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        return res.send("internal error");
+
+    }
+
+}
+module.exports= {createpost,getfeed,likes,unlike,getpost,getmyposts}

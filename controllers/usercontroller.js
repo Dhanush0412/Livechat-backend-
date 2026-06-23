@@ -132,8 +132,19 @@ let forgotpassword = async (req,res)=>{
         if(!userexist){
             return res.status(401).send("user not found")
         }
+
+        let otpverified = await Otp.findOne({
+         email:userexist.email,
+         verified:true
+        });
+
+     if(!otpverified){
+    return res.send("verify otp first");
+    }
+
         let hashedpassword = await bcrypt.hash(
-            newpassword,10
+            newpassword,
+            10
         )
         userexist.password=hashedpassword
         await userexist.save();
@@ -206,6 +217,49 @@ let verifyotp = async(req,res)=>{
     }
 }
 
+// send forgototp//
+let sendforgototp = async(req,res)=>{
+    try {
+        
+        let {login}=req.body
+        let user = await User.findOne({
+            $or:[
+                {email:login},{phone:login}
+            ]
+        })
+        if(!user){
+            return res.send("user not found")
+        }
+        let email =user.email;
+         let existingotp = await Otp.findOne({
+            email:email,
+            expiresAt:{
+                $gt:new Date()
+            }
+        })
+
+        if(existingotp){
+            return res.send( "OTP already sent. Wait 5 minutes.")
+        }
+
+        let otp = Math.floor(100000+Math.random()*900000)
+        await transporter.sendMail({
+            from:process.env.EMAIL,
+            to:email,
+            subject:"PandaChat Email Verification OTP",
+            text:`Your Forgot Password  Email Verification OTP is: ${otp} This OTP is valid for 5 minutes. Do not share this OTP with anyone. Team PandaChat`
+
+        })
+        await Otp.create({ email,otp,verified:false,expiresAt:new Date(Date.now() + 5*60*1000)
+
+     });
+        return res.send("OTP sent successfully");
+
+    } catch (error) {
+        console.log(error)
+        return res.send("internal error")
+    }
+}
 // search any user //
 let searchuser = async(req,res)=>{
     try {
@@ -225,4 +279,4 @@ let searchuser = async(req,res)=>{
 }
 
 
-module.exports = {signup,login,forgotpassword,sendotp,verifyotp,searchuser};
+module.exports = {signup,login,forgotpassword,sendotp,verifyotp,searchuser,sendforgototp};

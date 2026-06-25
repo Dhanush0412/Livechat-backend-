@@ -5,7 +5,8 @@ const cloudinary = require("./cloudinary");
 const storage = new CloudinaryStorage({
     cloudinary,
     params: {
-        folder: "pandachat"
+        folder: "pandachat",
+        resource_type: "auto"
     }
 });
 

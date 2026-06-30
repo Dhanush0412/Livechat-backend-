@@ -132,13 +132,17 @@ let sendgroupinvite =async(req,res)=>{
         if(invite.status!=="pending"){
             return res.status(429).send("invite already processed");
         }
+        
+         console.log("JWT Profile ID :", String(req.profileid));
+         console.log("Invite Receiver:", String(invite.receiver));
+          if(String(invite.receiver)!== String(req.profileid)){
+           return res.status(401).send("unauthorized");
+         }
         invite.status ="accepted";
         await invite.save();
         let group =await Group.findById(invite.group);
         let profile =await Profile.findById(invite.receiver);
-         if(String(invite.receiver)!== String(receiver)){
-           return res.status(401).send("unauthorized");
-         }
+        
         if(!group.members.includes(invite.receiver)){
             group.members.push(invite.receiver);
         }
@@ -153,9 +157,7 @@ let sendgroupinvite =async(req,res)=>{
         console.log(error);
         return res.status(500).send("internal error");
     }
-
 }
-
 // reject group invite //
 let rejectinvite = async(req,res)=>{
     try {
@@ -165,7 +167,7 @@ let rejectinvite = async(req,res)=>{
             return res.status(404).send("invite not found");
         }
         if(invite.status!=="pending"){
-            return res.status.send("invite already processed");
+            return res.status(429).send("invite already processed");
         }
         if(String(invite.receiver)!== String(req.profileid)){
            return res.status(401).send("unauthorized");

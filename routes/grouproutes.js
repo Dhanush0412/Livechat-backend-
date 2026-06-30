@@ -6,8 +6,8 @@ let {creategroup,sendgroupinvite,getpendinginvites, acceptinvite,rejectinvite,ge
 router.post("/new",verifytoken,creategroup)
 router.post("/sendinvite/:groupid/:receiverid",verifytoken,sendgroupinvite)
 router.get("/invites",verifytoken,getpendinginvites)
-router.put("/accept/:inviteid",acceptinvite)
-router.put("/reject/:inviteid",rejectinvite)
+router.put("/accept/:inviteid",verifytoken,acceptinvite)
+router.put("/reject/:inviteid",verifytoken,rejectinvite)
 router.get("/mygroups",verifytoken,getmygroup)
 router.get("/details/:groupid",getgroupdetails)
 

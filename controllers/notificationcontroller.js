@@ -13,7 +13,7 @@ let getnotifications = async(req,res)=>{
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 
 }
@@ -25,10 +25,10 @@ let markasread = async(req,res)=>{
         let { notificationid } =req.params;
         let notification =await Notification.findById(notificationid);
         if(!notification){
-            return res.send("notification not found");
+            return res.status(404).send("notification not found");
         }
         if(String(notification.receiverid)!== String(req.profileid)){
-           return res.send("unauthorized");
+           return res.status(401).send("unauthorized");
          }
         notification.read = true;
         await notification.save();
@@ -40,7 +40,7 @@ let markasread = async(req,res)=>{
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
 
     }
 

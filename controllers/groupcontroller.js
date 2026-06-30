@@ -11,7 +11,7 @@ let creategroup = async(req,res)=>{
         let {groupname}=req.body
         let profile = await Profile.findById(profileid)
         if(!profile){
-            return res.send("profile not found")
+            return res.status(404).send("profile not found")
         }
         let group = new Group({
             groupname:groupname,
@@ -28,7 +28,7 @@ let creategroup = async(req,res)=>{
         return res.json(group)
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 
@@ -42,14 +42,11 @@ let sendgroupinvite =async(req,res)=>{
         let group =await Group.findById(groupid);
 
         if(!group){
-
-            return res.send("group not found");
-
+            return res.status(404).send("group not found");
         }
         if(String(senderid) === String(receiverid)){
-            return res.send("cannot invite yourself");
+            return res.status(400).send("cannot invite yourself");
          }
-         
          console.log(senderid)
          console.log(receiverid)
          let inviter = await Profile.findById(senderid);
@@ -59,20 +56,20 @@ let sendgroupinvite =async(req,res)=>{
           if (inviter.blockedusers.includes(receiverid) ||
               invited.blockedusers.includes(senderid))
              {
-              return res.send("Cannot invite this user.");
+              return res.status(403).send("Cannot invite this user.");
              }
              console.log(group.createdby.toString());
              console.log(String(senderid))
 
         if(group.createdby.toString()!== String(senderid)){
-           return res.send("only admin can invite");
+           return res.status(401).send("only admin can invite");
          }
 
         let sender =await Profile.findById(senderid);
 
         if(!sender.connections.includes(receiverid))
             {
-            return res.send("user not connected");
+            return res.status(401).send("user not connected");
         }
 
         let existingInvite =await Groupinvite.findOne({
@@ -81,7 +78,7 @@ let sendgroupinvite =async(req,res)=>{
             status:"pending"
         });
         if(existingInvite){
-            return res.send("invite already sent");
+            return res.status(429).send("invite already sent");
         }
         let invite =new Groupinvite({
             group:groupid,
@@ -95,13 +92,13 @@ let sendgroupinvite =async(req,res)=>{
          type:"groupinvite",
          message:"invited you to a group"
         });
-        return res.send("invite sent");
+        return res.status(200).send("invite sent");
 
     }
 
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 }
 // get the pending request //
@@ -118,7 +115,7 @@ let sendgroupinvite =async(req,res)=>{
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 
 }
@@ -130,17 +127,17 @@ let sendgroupinvite =async(req,res)=>{
         let  {inviteid} =req.params;
         let invite =await Groupinvite.findById(inviteid);
         if(!invite){
-            return res.send("invite not found");
+            return res.status(404).send("invite not found");
         }
         if(invite.status!=="pending"){
-            return res.send("invite already processed");
+            return res.status(429).send("invite already processed");
         }
         invite.status ="accepted";
         await invite.save();
         let group =await Group.findById(invite.group);
         let profile =await Profile.findById(invite.receiver);
          if(String(invite.receiver)!== String(receiver)){
-           return res.send("unauthorized");
+           return res.status(401).send("unauthorized");
          }
         if(!group.members.includes(invite.receiver)){
             group.members.push(invite.receiver);
@@ -150,11 +147,11 @@ let sendgroupinvite =async(req,res)=>{
         }
         await group.save();
         await profile.save();
-        return res.send("invite accepted");
+        return res.status(200).send("invite accepted");
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 
 }
@@ -165,20 +162,20 @@ let rejectinvite = async(req,res)=>{
         let { inviteid } =req.params;
         let invite =await Groupinvite.findById(inviteid);
         if(!invite){
-            return res.send("invite not found");
+            return res.status(404).send("invite not found");
         }
         if(invite.status!=="pending"){
-            return res.send("invite already processed");
+            return res.status.send("invite already processed");
         }
         if(String(invite.receiver)!== String(req.profileid)){
-           return res.send("unauthorized");
+           return res.status(401).send("unauthorized");
          }
         invite.status="rejected"
         await invite.save();
-        return res.send("invite rejected")
+        return res.status(200).send("invite rejected")
     } catch (error) {
         console.log(error)
-        return res.send("Internal error")
+        return res.status(500).send("Internal error")
     }
 }
 
@@ -190,13 +187,13 @@ let getmygroup= async (req,res)=>{
         let profile = await Profile.findById(profileid)
         .populate("groups")
         if(!profile){
-            return res.send("profile not found")
+            return res.status(404).send("profile not found")
         }
         return res.json(profile.groups);
     } 
     catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 
@@ -206,7 +203,7 @@ let groupchatpreview = async(req,res)=>{
         let profileid  = req.profileid;
         let profile =await Profile.findById(profileid);
         if(!profile){
-            return res.send("profile not found");
+            return res.status(404).send("profile not found");
         }
         let result =await Message.aggregate([
             {
@@ -273,7 +270,7 @@ let groupchatpreview = async(req,res)=>{
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 
 }
@@ -287,13 +284,13 @@ let getgroupdetails = async(req,res)=>{
         .populate("createdby")
         .populate("members");
         if(!group){
-            return res.send("group not found");
+            return res.status(404).send("group not found");
         }
         return res.json(group);
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 
 }

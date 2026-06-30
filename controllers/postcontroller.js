@@ -11,7 +11,7 @@ let createpost = async(req,res)=>{
         let {caption}=req.body
         let profile = await Profile.findById(profileid)
         if(!profile){
-            return res.send("profile not found")
+            return res.status(404).send("profile not found")
         }      
         let post = new Post({
             caption:caption,
@@ -23,7 +23,7 @@ let createpost = async(req,res)=>{
         return res.json(post);
     } catch (error) {
         console.log(error)
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 }
 
@@ -33,7 +33,7 @@ let getfeed = async(req,res)=>{
     let profileid = req.profileid
     let profile = await Profile.findById(profileid)
         if(!profile){
-            return res.send("profile not found")
+            return res.status(404).send("profile not found")
         }  
         let posts = await Post.find({
             profile:{
@@ -56,7 +56,7 @@ let getfeed = async(req,res)=>{
       return res.json(posts);
     } catch (error) {
     console.log(error)
-    return res.send("internal error")
+    return res.status(500).send("internal error")
   }
 }
 // post likes //
@@ -68,14 +68,14 @@ let likes = async(req,res)=>{
 
         let profile = await Profile.findById(profileid)
         if(!profile){
-            return res.send("profile not found")
+            return res.status(400).send("profile not found")
         }
          let post = await Post.findById(postid)
         if(!post){
-            return res.send("post not found")
+            return res.status(400).send("post not found")
         }
         if(post.likes.includes(profileid)){
-            return res.send("already liked")
+            return res.status(429).send("already liked")
         }
         post.likes.push(profileid)
         await post.save();
@@ -96,7 +96,7 @@ let likes = async(req,res)=>{
 
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 
@@ -108,11 +108,11 @@ let unlike = async(req,res)=>{
         let {postid} = req.params
         let profile = await Profile.findById(profileid)
         if(!profile){
-            return res.send("profile not found")
+            return res.status(404).send("profile not found")
         }
         let post = await Post.findById(postid)
         if(!post){
-            return res.send("post not found")
+            return res.status(404).send("post not found")
         }
         post.likes = post.likes.filter(
             like=> like.toString() !== profileid.toString()
@@ -125,7 +125,7 @@ let unlike = async(req,res)=>{
         
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 
@@ -139,11 +139,11 @@ let addcomment = async (req,res)=>{
 
         let profile = await Profile.findById(profileid)
         if(!profile){
-            return res.send("profioe not found")
+            return res.status(404).send("profile not found")
         }
         let post = await Post.findById(postid)
         if(!post){
-            return res.send("post not found")
+            return res.status(404).send("post not found")
         }
         if(!text || text.trim() ==""){
             return res.send("comment required to send")
@@ -173,7 +173,7 @@ let addcomment = async (req,res)=>{
         return res.json(result)
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 
@@ -195,7 +195,7 @@ let getcomments = async(req,res)=>{
         return res.json(comments)
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 
@@ -207,22 +207,21 @@ let deletecomment = async(req,res)=>{
         let {commentid} = req.params
         let comment = await Comment.findById(commentid)
         if(!comment){
-           return res.send("comment not found") 
+           return res.status(404).send("comment not found") 
         }
         let post = await Post.findById(comment.post);
         if(String(post.profile) !== String(profileid) && String(comment.profile) !== String(profileid)){
-            return res.send("unauthorized")
+            return res.status(401).send("unauthorized")
         }
         await Comment.findByIdAndDelete(commentid)
-        return res.send("comment deleted")
+        return res.status(204).send("comment deleted")
     } catch (error) {
         console.log(error)
-        return res.send("intenal error")
+        return res.status(500).send("intenal error")
     }
 }
 
 // getting particular profile post //
-
 let getpost = async(req,res)=>{
     try {
         let {username} = req.query;
@@ -237,13 +236,13 @@ let getpost = async(req,res)=>{
         });
        
         if(!user){
-            return res.send("user not found")
+            return res.status(404).send("user not found")
         }
         let profile = await Profile.findOne({
             user:user._id
         })
         if(!profile){
-            return res.send("profile not created")
+            return res.status(404).send("profile not found")
         }
         let post = await Post.find({
             profile:profile._id
@@ -261,7 +260,7 @@ let getpost = async(req,res)=>{
 
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
  // getting my post //
@@ -271,7 +270,7 @@ let getpost = async(req,res)=>{
         let  profileid  = req.profileid
         let profile = await Profile.findById(profileid);
         if(!profile){
-            return res.send("profile not found");
+            return res.status(404).send("profile not found");
         }
         let posts = await Post.find({profile:profileid})
         .populate({
@@ -289,7 +288,7 @@ let getpost = async(req,res)=>{
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 }
 

@@ -98,10 +98,10 @@ let bioupdate = async(req,res)=>{
         let {bio} = req.body
         let profile = await Profile.findById(profileid)
         if(!profile){
-            return res.send("profile is not found")
+            return res.status(404).send("profile is not found")
         }
         if(bio == ""){
-            return res.send("bio required");
+            return res.status(400).send("bio required");
         }
         profile.bio=bio;
         await profile.save()
@@ -111,7 +111,7 @@ let bioupdate = async(req,res)=>{
         });
     } catch (error) {
        console.log(error)
-       return res.send("internal error") 
+       return res.status(500).send("internal error") 
     }
 }
 
@@ -123,7 +123,7 @@ let profileedit = async(req,res)=>{
         let {bio} = req.body        
         let profile = await Profile.findById(profileid)
         if(!profile){
-            return res.send("profile not found")
+            return res.status(404).send("profile not found")
         }
         if(bio){
             profile.bio=bio
@@ -139,7 +139,7 @@ let profileedit = async(req,res)=>{
         })
     } catch (error) {
        console.log(error)
-       return res.send("internal error")   
+       return res.status(500).send("internal error")   
     }
 }
 

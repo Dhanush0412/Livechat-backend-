@@ -11,7 +11,7 @@ let getchatlist = async(req,res)=>{
             }
         })
         if(!profile){
-            return res.send("profile not found")
+            return res.status(404).send("profile not found")
         }
     return res.json(profile.connections.map(
 
@@ -23,7 +23,7 @@ let getchatlist = async(req,res)=>{
      )) 
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 

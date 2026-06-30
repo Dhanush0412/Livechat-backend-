@@ -10,17 +10,17 @@ let sendrequest = async (req,res)=>{
         let senderid = req.profileid;
         let {receiverid}= req.params;
         if(senderid == receiverid){
-            return res.send("cannot send request to yourself")
+            return res.status(403).send("cannot send request to yourself")
         }
          let senderProfile = await Profile.findById(senderid);
          let receiverProfile = await Profile.findById(receiverid);
 
           if (senderProfile.blockedusers.includes(receiverid) ||receiverProfile.blockedusers.includes(senderid)) 
             {
-              return res.send("You cannot send a connection request.");
+              return res.status(403).send("You cannot send a connection request.");
              }
            if(senderProfile.connections.includes(receiverid)){
-            return res.send("you already connected with him")
+            return res.status(429).send("you already connected with him")
            }
         let requestexist = await Connectionrequest.findOne({
     $or:[
@@ -36,7 +36,7 @@ let sendrequest = async (req,res)=>{
 
       });
         if(requestexist){
-            return res.send("already request sent")
+            return res.status(429).send("already request sent")
         }
         let request = new Connectionrequest({
             sender:senderid,
@@ -50,11 +50,11 @@ let sendrequest = async (req,res)=>{
          message:"sent you a connection request"
 
           });
-        return res.send("request sent")
+        return res.status(200).send("request sent")
 
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 
@@ -71,7 +71,7 @@ let pendingrequest = async(req,res)=>{
         return res.json(requests)
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 
@@ -82,16 +82,16 @@ let acceptrequest = async(req,res)=>{
         let {requestid} = req.params;
         let request = await Connectionrequest.findById(requestid)
         if(!request){
-            return res.send("request not found")
+            return res.status(404).send("request not found")
         }
          if(String(request.receiver)!== String(req.profileid)){
-           return res.send("unauthorized");
+           return res.status(401).send("unauthorized");
          }
          if(request.status=="accepted"){
-            return res.send("you already accept the request")
+            return res.status(429).send("you already accept the request")
          }
          if(request.status=="rejected"){
-            return res.send("already you rejected the request")
+            return res.status(429).send("already you rejected the request")
          }
         request.status="accepted"
         await request.save();
@@ -109,11 +109,11 @@ let acceptrequest = async(req,res)=>{
         senderprofile.connections.push(receiverprofile._id)
         await senderprofile.save();
         await receiverprofile.save();
-        return res.send("request accepted")
+        return res.status(200).send("request accepted")
          
     } catch (error) {
        console.log(error)
-       return res.send("internal error")   
+       return res.status(500).send("internal error")   
     }
 }
 
@@ -123,20 +123,20 @@ let acceptrequest = async(req,res)=>{
         let {requestid} = req.params
          let request = await Connectionrequest.findById(requestid)
         if(!request){
-            return res.send("request not found")
+            return res.status(404).send("request not found")
         }
          if(String(request.receiver)!== String(req.profileid)){
-           return res.send("unauthorized");
+           return res.status(403).send("unauthorized");
          }
          if(request.status="accepted"){
-            return res.send("you already accept the code")
+            return res.status(429).send("you already accept the code")
          }
         request.status="rejected"
         await request.save();
-        return res.send("request rejected")
+        return res.status(200).send("request rejected")
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
  }
  // get connections //
@@ -154,24 +154,25 @@ let acceptrequest = async(req,res)=>{
 
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
  }
 
+ // block user //
  let blockuser = async(req,res)=>{
     try {
         let myprofileid = req.profileid
         let {blockprofileid} = req.params
         if(String(myprofileid)===String(blockprofileid)){
-            return res.send("You can't block yourself")
+            return res.status(403).send("You can't block yourself")
         }
         let myprofile = await Profile.findById(myprofileid)
         let targetprofile = await Profile.findById(blockprofileid)
         if(!targetprofile){
-            return res.send("Profile not found")
+            return res.status(404).send("Profile not found")
         }
         if(myprofile.blockedusers.includes(blockprofileid)){
-            return res.send("user already blocked")
+            return res.status(429).send("user already blocked")
         }
         myprofile.connections = myprofile.connections.filter(
             id=>String(id) !== String(blockprofileid)
@@ -180,7 +181,6 @@ let acceptrequest = async(req,res)=>{
         targetprofile.connections = targetprofile.connections.filter(
             id=>String(id) !== String(myprofileid)
         )
-
          await Connectionrequest.deleteMany({
             $or:[
                 {
@@ -196,10 +196,10 @@ let acceptrequest = async(req,res)=>{
           myprofile.blockedusers.push(blockprofileid);
         await myprofile.save();
         await targetprofile.save();
-        return res.send("User blocked");
+        return res.status(200).send("User blocked");
     } catch (error) {
         console.log(error)
-        return res.send("internal server error")
+        return res.status(500).send("internal server error")
     }
  }
 
@@ -216,11 +216,11 @@ let unblockuser = async(req,res)=>{
             id=>String(id)!==String(unblockprofileid)
         );
         await myprofile.save();
-        return res.send("User unblocked");
+        return res.status(200).send("User unblocked");
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 
 }
@@ -241,7 +241,7 @@ let blockedusers = async(req,res)=>{
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 }
 

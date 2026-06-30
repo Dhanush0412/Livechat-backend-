@@ -44,9 +44,7 @@ let signup = async(req,res)=>{
       email:email,
       verified:true
         });
-
    if(!otpverified){
-
     return res.send("verify email first");
     }
     let user = new User({
@@ -61,11 +59,11 @@ let signup = async(req,res)=>{
      email:email
      });
 
-   return res.send("signed up successfully");
+   return res.status(201).send("signed up successfully");
 
     } catch (error) {
         console.log(error)
-    return res.send("internal error")
+    return res.status(500).send("internal error")
   }
     
 }
@@ -82,7 +80,7 @@ let login = async(req,res)=>{
     })
 
     if(!userexist){
-        return res.status(401).send("User not exist")
+        return res.status(404).send("User not exist")
     }
 
     let ismatch = await bcrypt.compare(
@@ -90,7 +88,7 @@ let login = async(req,res)=>{
         userexist.password
     )
     if(!ismatch){
-        return res.status(401).send("invalid password")
+        return res.status(400).send("invalid password")
     }
     let profile =await Profile.findOne({user:userexist._id});
     
@@ -122,7 +120,7 @@ let login = async(req,res)=>{
 });
 
   } catch (error) {
-    return res.send("internal error")
+    return res.status(500).send("internal error")
   }
 }
 
@@ -132,7 +130,7 @@ let forgotpassword = async (req,res)=>{
     try {
         let {login, newpassword, confirmpassword} = req.body
         if(newpassword !== confirmpassword){
-            return res.send("password mismatch")
+            return res.status(400).send("password mismatch")
         }
         let userexist = await User.findOne({
             $or:[
@@ -140,14 +138,14 @@ let forgotpassword = async (req,res)=>{
             ]
         })
         if(!userexist){
-            return res.status(401).send("user not found")
+            return res.status(404).send("user not found")
         }
         let otpverified = await Otp.findOne({
          email:userexist.email,
          verified:true
         });
      if(!otpverified){
-    return res.send("verify otp first");
+    return res.status(403).send("verify otp first");
     }
         let hashedpassword = await bcrypt.hash(newpassword, 10);
         userexist.password = hashedpassword;
@@ -156,9 +154,9 @@ let forgotpassword = async (req,res)=>{
           await Otp.deleteMany({
            email: userexist.email
           });
-         return res.send("password updated successfully");
+         return res.status(201).send("password updated successfully");
        } catch (error) {
-       return res.send("internal error")   
+       return res.status(500).send("internal error")   
     }
 }
 // sending OTP //
@@ -187,10 +185,10 @@ let sendotp = async(req,res)=>{
         })
         await Otp.create({ email,otp,verified:false,expiresAt:new Date(Date.now() + 5*60*1000)
 });
-        return res.send("OTP sent successfully");
+        return res.status(200).send("OTP sent successfully");
     } catch (error) {
         console.log(error)
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 }
 // verify otp //
@@ -207,23 +205,20 @@ let verifyotp = async(req,res)=>{
         });
 
         if(!otpdata){
-            return res.send("OTP not found");
+            return res.status(404).send("OTP not found");
         }
-
         if(otpdata.expiresAt < new Date()){
-            return res.send("OTP expired");
+            return res.status(400).send("OTP expired");
         }
-
         if(String(otpdata.otp) !== String(otp)){
-            return res.send("Invalid OTP");
+            return res.status(400).send("Invalid OTP");
         }
-
         otpdata.verified = true;
         await otpdata.save();
-        return res.send("Email verified");
+        return res.status(200).send("Email verified");
     } catch(error){
         console.log(error);
-        return res.send("Internal error");
+        return res.status(500).send("Internal error");
     }
 }
 // send forgototp//
@@ -237,7 +232,7 @@ let sendforgototp = async(req,res)=>{
             ]
         })
         if(!user){
-            return res.send("user not found")
+            return res.status(404).send("user not found")
         }
         let email =user.email;
          let existingotp = await Otp.findOne({
@@ -248,7 +243,7 @@ let sendforgototp = async(req,res)=>{
         })
 
         if(existingotp){
-            return res.send( "OTP already sent. Wait 5 minutes.")
+            return res.status(429).send( "OTP already sent. Wait 5 minutes.")
         }
         let otp = Math.floor(100000+Math.random()*900000)
         await transporter.sendMail({
@@ -261,10 +256,10 @@ let sendforgototp = async(req,res)=>{
         await Otp.create({ email,otp,verified:false,expiresAt:new Date(Date.now() + 5*60*1000)
 
      });
-        return res.send("OTP sent successfully");
+        return res.status(200).send("OTP sent successfully");
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 let verifyforgototp = async(req,res)=>{
@@ -277,11 +272,10 @@ let verifyforgototp = async(req,res)=>{
                 {email:login},
                 {phone:login}
             ]
-
         });
 
         if(!user){
-            return res.send("User not found");
+            return res.status(404).send("User not found");
         }
         let otpdata = await Otp.findOne({
             email:user.email,
@@ -290,22 +284,23 @@ let verifyforgototp = async(req,res)=>{
         }).sort({
             createdAt:-1
         });
+        
         if(!otpdata){
-            return res.send("OTP not found");
+            return res.status(404).send("OTP not found");
         }
         if(otpdata.expiresAt < new Date()){
-            return res.send("OTP expired");
+            return res.status(400).send("OTP expired");
         }
         if(String(otpdata.otp)!==String(otp)){
-            return res.send("Invalid OTP");
+            return res.status(400).send("Invalid OTP");
         }
         otpdata.verified=true;
         await otpdata.save();
-        return res.send("OTP verified");
+        return res.status(200).send("OTP verified");
     }
     catch(error){
         console.log(error);
-        return res.send("Internal error");
+        return res.status(500).send("Internal error");
     }
 
 }
@@ -327,7 +322,7 @@ let searchuser = async(req,res)=>{
     } 
     catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 

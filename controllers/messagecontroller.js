@@ -10,13 +10,13 @@ let sendmessage = async (req,res)=>{
         let{text,groupid}= req.body
         let group = await Group.findById(groupid)
         if(!group){
-            return res.send("group not found")
+            return res.status(404).send("group not found")
         }
         if(!group.members.includes(senderid)){
-           return res.send("you are not a member of this group");
+           return res.status(403).send("you are not a member of this group");
           }
          if(!text || text.trim()===""){
-           return res.send("message required");
+           return res.status(400).send("message required");
           }
          let message = new Message({
             text:text,
@@ -33,7 +33,7 @@ let sendmessage = async (req,res)=>{
          return res.json(populatemessage)
     } catch (error) {
         console.log(error)
-        return res.send("internal error")
+        return res.status(500).send("internal error")
     }
 }
 
@@ -45,10 +45,10 @@ let getgroupmessage = async(req,res)=>{
         let {groupid} = req.params;
         let group = await Group.findById(groupid)
         if(!group){
-            return res.send("group not exist")
+            return res.status(404).send("group not exist")
         }
         if(!group.members.includes(profileid)){
-            return res.send("access denied");
+            return res.status(401).send("access denied");
         }
         let messages =await Message.find({group:groupid})
         .populate("sender")
@@ -58,7 +58,7 @@ let getgroupmessage = async(req,res)=>{
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 
 }

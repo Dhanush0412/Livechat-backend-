@@ -14,7 +14,7 @@ let senddirectmessage = async(req,res)=>{
      if (sender.blockedusers.includes(receiverid) ||
          receiver.blockedusers.includes(senderid))
      {
-    return res.send("You cannot message this user.");
+    return res.status(403).send("You cannot message this user.");
      }
     let message= new Directmessage({
         text:text,
@@ -37,7 +37,7 @@ let senddirectmessage = async(req,res)=>{
     return res.json(populatedmessage)
    } catch (error) {
       console.log(error)
-      return res.send("internal error")
+      return res.status(500).send("internal error")
    }
 }
 
@@ -67,7 +67,7 @@ let getdirectmessage = async(req,res)=>{
     return res.json(message)
    } catch (error) {
     console.log(error)
-    return res.send("internal error")
+    return res.status(500).send("internal error")
    }
 }
 // mark the readed message //
@@ -84,11 +84,11 @@ let markmessagesread = async(req,res)=>{
         {
             isRead:true
         });
-        return res.send("messages marked as read");
+        return res.status(200).send("messages marked as read");
     }
     catch(error){
         console.log(error);
-        return res.send("internal error");
+        return res.status(500).send("internal error");
     }
 
 }
@@ -99,17 +99,12 @@ let unreadcount =async(req,res)=>{
         let  profileid  =req.profileid;
         let result =await Directmessage.aggregate([
         {
-
             $match:{
-
                 receiver:new mongoose.Types.ObjectId(profileid),
                 isRead:false
             }
-
         },
-
         {
-
             $group:{
                 _id:"$sender",
                 unreadCount:{
@@ -122,7 +117,7 @@ let unreadcount =async(req,res)=>{
     }
     catch(error){
         console.log(error);
-        return res.send( "internal error");
+        return res.status(500).send( "internal error");
     }
 }
 
@@ -186,7 +181,7 @@ let chats =await Directmessage.aggregate([
 }
 catch(error){
    console.log(error);
-   return res.send("internal error");
+   return res.status(500).send("internal error");
 }
 }
 
@@ -278,11 +273,8 @@ let result = await Directmessage.aggregate([
 return res.json(result);
 }
 catch(error){
-
   console.log(error);
-
-  return res.send("internal error");
-
+  return res.status(500).send("internal error");
 }
 
 }
